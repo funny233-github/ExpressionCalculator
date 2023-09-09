@@ -66,11 +66,15 @@ class calculate:
             higherPriority = self.getPriority(char,nextChar) > maxPriority
             isNotNum = not (char in "0123456789")
             
+
+
             if notInParentheses and higherPriority and isNotNum:
                 maxPriority = self.getPriority(char,nextChar)
                 result = i
+
             if  maxPriority == max(self.priorityList):
                 return result
+
             ispower = char == "*" and nextChar == "*"
             if ispower:
                 i += 2
@@ -85,25 +89,25 @@ class calculate:
                 return False
         return True
 
-    def calculateBasedOnOperator(self,operator,left,right):
+    def calculateBasedOnOperator(self,operator,leftResult,rightResult):
         if operator == "+":
-            return self.addition(left,right)
+            return self.addition(leftResult,rightResult)
         if operator == "-":
-            return self.subtraction(left,right)
+            return self.subtraction(leftResult,rightResult)
         if operator == "*":
-            return self.multiplication(left,right)
+            return self.multiplication(leftResult,rightResult)
         if operator == "/":
-            return self.division(left,right)
+            return self.division(leftResult,rightResult)
         if operator == "%":
-            return self.remainder(left,right)
+            return self.remainder(leftResult,rightResult)
         if operator == "**":
-            return self.powerOf(left,right)
+            return self.powerOf(leftResult,rightResult)
 
-    def getLeft(self,index,string):
+    def getLeftResult(self,index,string):
         leftString = string[:index]
         return self.calculateString(leftString)
     
-    def getRightAndOperator(self,index,string):
+    def getRightResultAndOperator(self,index,string):
         ispower = string[index] == "*" and string[index+1] == "*"
         if ispower:
             rightstring = string[index+2:]
@@ -125,7 +129,7 @@ class calculate:
         operatorIndex = self.getMaxPriorityIndex(string)
 
 
-        left = self.getLeft(operatorIndex,string)
-        right, operator = self.getRightAndOperator(operatorIndex,string)
+        leftResult = self.getLeftResult(operatorIndex,string)
+        rightResult, operator = self.getRightResultAndOperator(operatorIndex,string)
 
-        return self.calculateBasedOnOperator(operator,left,right)
+        return self.calculateBasedOnOperator(operator,leftResult,rightResult)
