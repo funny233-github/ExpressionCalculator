@@ -27,10 +27,10 @@ class calculate:
         return x ** y
 
     def getPriority(self,char,nextChar):
-        ispower = char == "*" and nextChar == "*"
-        ismulti = char == "*" and nextChar != "*"
-        isNum = char in "0123456789"
-        isParentheses = char in "()"
+        ispower        =  char == "*" and nextChar == "*"
+        ismulti        =  char == "*" and nextChar != "*"
+        isNum          =  char in "0123456789"
+        isParentheses  =  char in "()"
         if ispower:
             return self.priorityList["**"]
         if ismulti:
@@ -50,27 +50,26 @@ class calculate:
 
 
     def getMaxPriorityIndex(self,string):
-        transformString = string + "#"
-        parentheses = 0
-        maxPriority = -1
-        result = 0
+        transformString  = string + "#"
+        parentheses      = 0
+        maxPriority      = -1
+        result           = 0
 
-        i = 0
+        i                = 0
+
         while i < len(transformString)-1:
-            char = transformString[i]
-            nextChar = transformString[i+1]
+            char             =  transformString[i]
+            nextChar         =  transformString[i+1]
 
-            parentheses += self.checkParentheses(char)
+            parentheses     +=  self.checkParentheses(char)
 
-            notInParentheses = parentheses == 0
-            higherPriority = self.getPriority(char,nextChar) > maxPriority
-            isNotNum = not (char in "0123456789")
-            
-
+            notInParentheses =  parentheses ==  0
+            higherPriority   =  self.getPriority(char,nextChar) > maxPriority
+            isNotNum         =  not (char in "0123456789")
 
             if notInParentheses and higherPriority and isNotNum:
                 maxPriority = self.getPriority(char,nextChar)
-                result = i
+                result      = i
 
             if  maxPriority == max(self.priorityList):
                 return result
@@ -111,10 +110,10 @@ class calculate:
         ispower = string[index] == "*" and string[index+1] == "*"
         if ispower:
             rightstring = string[index+2:]
-            operator = "**"
+            operator    = "**"
         else:
             rightstring = string[index+1:]
-            operator = string[index]
+            operator    = string[index]
         return self.calculateString(rightstring), operator
 
     def calculateString(self,string):
@@ -129,7 +128,7 @@ class calculate:
         operatorIndex = self.getMaxPriorityIndex(string)
 
 
-        leftResult = self.getLeftResult(operatorIndex,string)
+        leftResult            = self.getLeftResult(operatorIndex,string)
         rightResult, operator = self.getRightResultAndOperator(operatorIndex,string)
 
         return self.calculateBasedOnOperator(operator,leftResult,rightResult)
