@@ -132,3 +132,6 @@ class calculate:
         rightResult, operator = self.getRightResultAndOperator(operatorIndex,string)
 
         return self.calculateBasedOnOperator(operator,leftResult,rightResult)
+
+    def __init__(self,string):
+        self.result = self.calculateString(string)
