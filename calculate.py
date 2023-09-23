@@ -86,11 +86,6 @@ class calculate:
 
         return result
 
-    def pureNum(self,string):
-        for i in string:
-            if not(i in "0123456789"): 
-                return False
-        return True
 
     def calculateBasedOnOperator(self,operator,leftResult,rightResult):
         if operator == "+":
