@@ -123,7 +123,7 @@ class expressionCalculator(operator):
                 self.parseAdditionAndSubtraction,
                 ]
         for func in stack:
-            if func(expression) != None:
+            if func(expression) is not None:
                 return func(expression)
         return self.parseNumber(expression)
 
