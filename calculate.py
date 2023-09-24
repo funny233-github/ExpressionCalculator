@@ -28,8 +28,8 @@ class expresoinCalculator(operator):
             return float(string)
         return int(string)
 
-    def parseString(self,string):
 
+    def parseParentheses(self,string:str):
         ifLeftParentheses = string[0] == "("
         ifRightParentheses = string[-1] == ")"
 
@@ -41,47 +41,58 @@ class expresoinCalculator(operator):
             raise Exception("syntax error:unexpected parentheses ->"+string)
         if haveParentheses:
             return self.parseString(string[1:-1])
-             
+        return None
 
+    def parseAdditionAndSubtraction(self,string:str):
 
+        match = re.match(r"\s*(.*?)?(\+|\-)(.*)",string)
+        isAddition = match and match.group(2) == "+" and match.group(1) and match.group(2)
+        isSubtraction = match and match.group(2) == "-" and match.group(1) and match.group(2)
+        isPositive = match and match.group(2) == "+" and (not match.group(1)) and match.group(2)
+        isNegative = match and match.group(2) == "-" and (not match.group(1)) and match.group(2)
+        if match and isAddition:
 
-        additionMatch = re.match(r"\s*(.*?)?(\+|\-)(.*)",string)
-        isAddition = additionMatch and additionMatch.group(2) == "+" and additionMatch.group(1) and additionMatch.group(2)
-        isSubtraction = additionMatch and additionMatch.group(2) == "-" and additionMatch.group(1) and additionMatch.group(2)
-        isPositive = additionMatch and additionMatch.group(2) == "+" and (not additionMatch.group(1)) and additionMatch.group(2)
-        isNegative = additionMatch and additionMatch.group(2) == "-" and (not additionMatch.group(1)) and additionMatch.group(2)
-        if additionMatch and isAddition:
-
-            left = self.parseString(additionMatch.group(1))
-            right = self.parseString(additionMatch.group(3))
+            left = self.parseString(match.group(1))
+            right = self.parseString(match.group(3))
             return self.addition(left,right)
 
-        elif additionMatch and isSubtraction:
-            left = self.parseString(additionMatch.group(1))
-            right = self.parseString(additionMatch.group(3))
+        elif match and isSubtraction:
+            left = self.parseString(match.group(1))
+            right = self.parseString(match.group(3))
             return self.subtraction(left,right) 
 
-        elif additionMatch and isPositive:
+        elif match and isPositive:
 
-            return self.parseString(additionMatch.group(3))
-        elif additionMatch and isNegative:
-            return -1 * self.parseString(additionMatch.group(3))
+            return self.parseString(match.group(3))
+        elif match and isNegative:
+            return -1 * self.parseString(match.group(3))
 
-        elif additionMatch:
+        elif match:
             raise Exception("syntax error:the operator '+' is unexpected -> "+string)
+        return None
 
 
-
-        numberMatch = re.match(r"\s*(\d+)(\.\d+)?\s*$",string)
+    def parseNumber(self,string:str):
+        match = re.match(r"\s*(\d+)(\.\d+)?\s*$",string)
         """
         12355.1234
         numberMatch.group(1):Interger part -> 12355
         numberMatch.group(2):Float Part -> .1234
         """
-        if numberMatch:
-            return self.stringToNumber(numberMatch,string)
+        if match:
+            return self.stringToNumber(match,string)
         else:
             raise Exception("syntax error:the number \""+string+"\" is unexpected")
+
+    def parseString(self,string):
+        stack = [
+                self.parseParentheses,
+                self.parseAdditionAndSubtraction,
+                ]
+        for func in stack:
+            if func(string) != None:
+                return func(string)
+        return self.parseNumber(string)
 
     def __init__(self,string:str):
         self.result = self.parseString(string)
