@@ -28,7 +28,7 @@ class expresoinCalculator(operator):
             return float(string)
         return int(string)
 
-    def calculateString(self,string):
+    def parseString(self,string):
 
         ifLeftParentheses = string[0] == "("
         ifRightParentheses = string[-1] == ")"
@@ -40,7 +40,7 @@ class expresoinCalculator(operator):
         if parenthesesSyntaxError:
             raise Exception("syntax error:unexpected parentheses ->"+string)
         if haveParentheses:
-            return self.calculateString(string[1:-1])
+            return self.parseString(string[1:-1])
              
 
 
@@ -52,20 +52,20 @@ class expresoinCalculator(operator):
         isNegative = additionMatch and additionMatch.group(2) == "-" and (not additionMatch.group(1)) and additionMatch.group(2)
         if additionMatch and isAddition:
 
-            left = self.calculateString(additionMatch.group(1))
-            right = self.calculateString(additionMatch.group(3))
+            left = self.parseString(additionMatch.group(1))
+            right = self.parseString(additionMatch.group(3))
             return self.addition(left,right)
 
         elif additionMatch and isSubtraction:
-            left = self.calculateString(additionMatch.group(1))
-            right = self.calculateString(additionMatch.group(3))
+            left = self.parseString(additionMatch.group(1))
+            right = self.parseString(additionMatch.group(3))
             return self.subtraction(left,right) 
 
         elif additionMatch and isPositive:
 
-            return self.calculateString(additionMatch.group(3))
+            return self.parseString(additionMatch.group(3))
         elif additionMatch and isNegative:
-            return -1 * self.calculateString(additionMatch.group(3))
+            return -1 * self.parseString(additionMatch.group(3))
 
         elif additionMatch:
             raise Exception("syntax error:the operator '+' is unexpected -> "+string)
@@ -84,4 +84,4 @@ class expresoinCalculator(operator):
             raise Exception("syntax error:the number \""+string+"\" is unexpected")
 
     def __init__(self,string:str):
-        self.result = self.calculateString(string)
+        self.result = self.parseString(string)
