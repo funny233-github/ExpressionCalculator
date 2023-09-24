@@ -32,21 +32,19 @@ class expressionCalculator(operator):
 
 
     def parseParentheses(self,expression:str):
-        ifLeftParentheses = expression[0] == "("
-        ifRightParentheses = expression[-1] == ")"
+
+        match = re.match(r"\s*\((.*)\)\s*",expression)
+        if match:
+            return self.parseExpression(match.group(1))
 
         singleParentheses = self.xor("(" in expression,")" in expression)
-
-        ifParentheses = ifLeftParentheses and ifRightParentheses
-
         if singleParentheses:
             raise Exception("syntax error:unexpected parentheses ->"+expression)
-        if ifParentheses:
-            return self.parseExpression(expression[1:-1])
+
         return None
 
     def parsePowerOf(self,expression:str):
-        match = re.match(r"\s*(.+?)(\*\*)(.+)",expression)
+        match = re.match(r"\s*(.+?)\s*(\*\*)\s*(.+)\s*",expression)
         if match:
             left = self.parseExpression(match.group(1))
             right = self.parseExpression(match.group(3))
@@ -54,7 +52,7 @@ class expressionCalculator(operator):
         return None
 
     def parseMultiplicationDivisoinRemainder(self,expression:str):
-        match = re.match(r"\s*(.+?)(\*|\/\/|\/|%)(.+)",expression)
+        match = re.match(r"\s*(.+?)\s*(\*|\/\/|\/|%)\s*(.+)\s*",expression)
         ifmultiplication = match and match.group(2) == "*"
         ifdivision = match and match.group(2) == "/"
         ifremainder = match and match.group(2) == "%"
@@ -79,7 +77,7 @@ class expressionCalculator(operator):
 
     def parseAdditionAndSubtraction(self,expression:str):
 
-        match = re.match(r"\s*(.*?)(\+|\-)(.+)",expression)
+        match = re.match(r"\s*(.*?)\s*(\+|\-)\s*(.+)\s*",expression)
         isAddition = match and match.group(2) == "+" and match.group(1) and match.group(2)
         isSubtraction = match and match.group(2) == "-" and match.group(1) and match.group(2)
         isPositive = match and match.group(2) == "+" and (not match.group(1)) and match.group(2)
