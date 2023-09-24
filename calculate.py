@@ -1,13 +1,6 @@
-class calculate:
-    priorityList = {
-        "+":2,   
-        "-":2,
-        "*":1,
-        "/":1,
-        "%":1,
-        "**":0
-    }
+import re
 
+class operator:
     def addition(self,x,y):
         return x + y
     
@@ -25,110 +18,114 @@ class calculate:
     
     def powerOf(self,x,y):
         return x ** y
+    def divisor(self,x,y):
+        return x//y
 
-    def getPriority(self,char,nextChar):
-        ispower        =  char == "*" and nextChar == "*"
-        ismulti        =  char == "*" and nextChar != "*"
-        isNum          =  char in "0123456789"
-        isParentheses  =  char in "()"
-        if ispower:
-            return self.priorityList["**"]
-        if ismulti:
-            return self.priorityList["*"]
-        if isNum:
-            return 3
-        if isParentheses:
-            return 0
-        return self.priorityList[char]
+class expressionCalculator(operator):
+    def xor(self,a,b):
+        return bool((a and not b) or (b and not a))
 
-    def checkParentheses(self,char):
-        if char == "(":
-            return 1
-        if char == ")":
-            return -1
-        return 0
+    def stringToNumber(self,numberMatch,expression:str):
+        if numberMatch.group(2):
+            return float(expression)
+        return int(expression)
 
 
-    def getMaxPriorityIndex(self,string):
-        transformString  = string + "#"
-        parentheses      = 0
-        maxPriority      = -1
-        result           = 0
+    def parseParentheses(self,expression:str):
+        ifLeftParentheses = expression[0] == "("
+        ifRightParentheses = expression[-1] == ")"
 
-        i                = 0
+        parenthesesSyntaxError = self.xor(ifLeftParentheses,ifRightParentheses)
 
-        while i < len(transformString)-1:
-            char             =  transformString[i]
-            nextChar         =  transformString[i+1]
+        haveParentheses = ifLeftParentheses and ifRightParentheses
 
-            parentheses     +=  self.checkParentheses(char)
+        if parenthesesSyntaxError:
+            raise Exception("syntax error:unexpected parentheses ->"+expression)
+        if haveParentheses:
+            return self.parseExpression(expression[1:-1])
+        return None
 
-            notInParentheses =  parentheses ==  0
-            higherPriority   =  self.getPriority(char,nextChar) > maxPriority
-            isNotNum         =  not (char in "0123456789")
+    def parsePowerOf(self,expression:str):
+        match = re.match(r"\s*(.+?)(\*\*)(.+)",expression)
+        if match:
+            left = self.parseExpression(match.group(1))
+            right = self.parseExpression(match.group(3))
+            return self.powerOf(left,right)
+        return None
 
-            if notInParentheses and higherPriority and isNotNum:
-                maxPriority = self.getPriority(char,nextChar)
-                result      = i
+    def parseMultiplicationDivisoinRemainder(self,expression:str):
+        match = re.match(r"\s*(.+?)(\*|\/\/|\/|%)(.+)",expression)
+        ifmultiplication = match and match.group(2) == "*"
+        ifdivision = match and match.group(2) == "/"
+        ifremainder = match and match.group(2) == "%"
+        ifdivisor = match and match.group(2) == "//"
+        if match and ifmultiplication:
+            left = self.parseExpression(match.group(1))
+            right = self.parseExpression(match.group(3))
+            return self.multiplication(left,right)
+        if match and ifdivision:
+            left = self.parseExpression(match.group(1))
+            right = self.parseExpression(match.group(3))
+            return self.division(left,right)
+        if match and ifremainder:
+            left = self.parseExpression(match.group(1))
+            right = self.parseExpression(match.group(3))
+            return self.remainder(left,right)
+        if match and ifdivisor:
+            left = self.parseExpression(match.group(1))
+            right = self.parseExpression(match.group(3))
+            return self.divisor(left,right)
+        return None
 
-            if  maxPriority == max(self.priorityList):
-                return result
+    def parseAdditionAndSubtraction(self,expression:str):
 
-            ispower = char == "*" and nextChar == "*"
-            if ispower:
-                i += 2
-            else:
-                i += 1
+        match = re.match(r"\s*(.*?)(\+|\-)(.+)",expression)
+        isAddition = match and match.group(2) == "+" and match.group(1) and match.group(2)
+        isSubtraction = match and match.group(2) == "-" and match.group(1) and match.group(2)
+        isPositive = match and match.group(2) == "+" and (not match.group(1)) and match.group(2)
+        isNegative = match and match.group(2) == "-" and (not match.group(1)) and match.group(2)
+        if match and isAddition:
 
-        return result
+            left = self.parseExpression(match.group(1))
+            right = self.parseExpression(match.group(3))
+            return self.addition(left,right)
 
-    def pureNum(self,string):
-        for i in string:
-            if not(i in "0123456789"): 
-                return False
-        return True
+        if match and isSubtraction:
+            left = self.parseExpression(match.group(1))
+            right = self.parseExpression(match.group(3))
+            return self.subtraction(left,right) 
 
-    def calculateBasedOnOperator(self,operator,leftResult,rightResult):
-        if operator == "+":
-            return self.addition(leftResult,rightResult)
-        if operator == "-":
-            return self.subtraction(leftResult,rightResult)
-        if operator == "*":
-            return self.multiplication(leftResult,rightResult)
-        if operator == "/":
-            return self.division(leftResult,rightResult)
-        if operator == "%":
-            return self.remainder(leftResult,rightResult)
-        if operator == "**":
-            return self.powerOf(leftResult,rightResult)
+        if match and isPositive:
 
-    def getLeftResult(self,index,string):
-        leftString = string[:index]
-        return self.calculateString(leftString)
-    
-    def getRightResultAndOperator(self,index,string):
-        ispower = string[index] == "*" and string[index+1] == "*"
-        if ispower:
-            rightstring = string[index+2:]
-            operator    = "**"
+            return self.parseExpression(match.group(3))
+        if match and isNegative:
+            return -1 * self.parseExpression(match.group(3))
+        return None
+
+
+    def parseNumber(self,expression:str):
+        match = re.match(r"\s*(\d+)(\.\d+)?\s*$",expression)
+        """
+        12355.1234
+        numberMatch.group(1):Interger part -> 12355
+        numberMatch.group(2):Float Part -> .1234
+        """
+        if match:
+            return self.stringToNumber(match,expression)
         else:
-            rightstring = string[index+1:]
-            operator    = string[index]
-        return self.calculateString(rightstring), operator
+            raise Exception("syntax error:the number \""+expression+"\" is unexpected")
 
-    def calculateString(self,string):
+    def parseExpression(self,expression:str):
+        stack = [
+                self.parseParentheses,
+                self.parsePowerOf,
+                self.parseMultiplicationDivisoinRemainder,
+                self.parseAdditionAndSubtraction,
+                ]
+        for func in stack:
+            if func(expression) != None:
+                return func(expression)
+        return self.parseNumber(expression)
 
-        ifInParentheses = string[0] == "(" and string[-1] == ")"
-        if ifInParentheses:
-            return self.calculateString(string[1:-1])
-
-        if self.pureNum(string):
-            return int(string)
-
-        operatorIndex = self.getMaxPriorityIndex(string)
-
-
-        leftResult            = self.getLeftResult(operatorIndex,string)
-        rightResult, operator = self.getRightResultAndOperator(operatorIndex,string)
-
-        return self.calculateBasedOnOperator(operator,leftResult,rightResult)
+    def __init__(self,expression:str):
+        self.result = self.parseExpression(expression)
