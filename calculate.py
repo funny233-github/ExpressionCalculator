@@ -45,6 +45,14 @@ class expressionCalculator(operator):
             return self.parseString(expression[1:-1])
         return None
 
+    def parsePowerOf(self,expression:str):
+        match = re.match(r"\s*(.+?)(\*\*)(.+)",expression)
+        if match:
+            left = self.parseString(match.group(1))
+            right = self.parseString(match.group(3))
+            return self.powerOf(left,right)
+        return None
+
     def parseMultiplicationDivisoinRemainder(self,expression:str):
         match = re.match(r"\s*(.+?)(\*|\/\/|\/|%)(.+)",expression)
         ifmultiplication = match and match.group(2) == "*"
@@ -110,6 +118,7 @@ class expressionCalculator(operator):
     def parseString(self,expression:str):
         stack = [
                 self.parseParentheses,
+                self.parsePowerOf,
                 self.parseMultiplicationDivisoinRemainder,
                 self.parseAdditionAndSubtraction,
                 ]
