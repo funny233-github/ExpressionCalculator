@@ -18,6 +18,8 @@ class operator:
     
     def powerOf(self,x,y):
         return x ** y
+    def divisor(self,x,y):
+        return x//y
 
 class expresoinCalculator(operator):
     def xor(self,a,b):
@@ -43,9 +45,33 @@ class expresoinCalculator(operator):
             return self.parseString(string[1:-1])
         return None
 
+    def parseMultiplicationDivisoinRemainder(self,string:str):
+        match = re.match(r"\s*(.+?)(\*|\/\/|\/|%)(.+)",string)
+        ifmultiplication = match and match.group(2) == "*"
+        ifdivision = match and match.group(2) == "/"
+        ifremainder = match and match.group(2) == "%"
+        ifdivisor = match and match.group(2) == "//"
+        if match and ifmultiplication:
+            left = self.parseString(match.group(1))
+            right = self.parseString(match.group(3))
+            return self.multiplication(left,right)
+        if match and ifdivision:
+            left = self.parseString(match.group(1))
+            right = self.parseString(match.group(3))
+            return self.division(left,right)
+        if match and ifremainder:
+            left = self.parseString(match.group(1))
+            right = self.parseString(match.group(3))
+            return self.remainder(left,right)
+        if match and ifdivisor:
+            left = self.parseString(match.group(1))
+            right = self.parseString(match.group(3))
+            return self.divisor(left,right)
+        return None
+
     def parseAdditionAndSubtraction(self,string:str):
 
-        match = re.match(r"\s*(.*?)?(\+|\-)(.*)",string)
+        match = re.match(r"\s*(.*?)(\+|\-)(.+)",string)
         isAddition = match and match.group(2) == "+" and match.group(1) and match.group(2)
         isSubtraction = match and match.group(2) == "-" and match.group(1) and match.group(2)
         isPositive = match and match.group(2) == "+" and (not match.group(1)) and match.group(2)
@@ -56,19 +82,16 @@ class expresoinCalculator(operator):
             right = self.parseString(match.group(3))
             return self.addition(left,right)
 
-        elif match and isSubtraction:
+        if match and isSubtraction:
             left = self.parseString(match.group(1))
             right = self.parseString(match.group(3))
             return self.subtraction(left,right) 
 
-        elif match and isPositive:
+        if match and isPositive:
 
             return self.parseString(match.group(3))
-        elif match and isNegative:
+        if match and isNegative:
             return -1 * self.parseString(match.group(3))
-
-        elif match:
-            raise Exception("syntax error:the operator '+' is unexpected -> "+string)
         return None
 
 
@@ -87,6 +110,7 @@ class expresoinCalculator(operator):
     def parseString(self,string):
         stack = [
                 self.parseParentheses,
+                self.parseMultiplicationDivisoinRemainder,
                 self.parseAdditionAndSubtraction,
                 ]
         for func in stack:
