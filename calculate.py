@@ -1,9 +1,6 @@
 import re
 
-class calculate:
-    def xor(self,a,b):
-        return bool((a and not b) or (b and not a))
-
+class operator:
     def addition(self,x,y):
         return x + y
     
@@ -21,6 +18,10 @@ class calculate:
     
     def powerOf(self,x,y):
         return x ** y
+
+class expresoinCalculator(operator):
+    def xor(self,a,b):
+        return bool((a and not b) or (b and not a))
 
     def stringToNumber(self,numberMatch,string:str):
         if numberMatch.group(2):
@@ -44,14 +45,27 @@ class calculate:
 
 
 
-        additionMatch = re.match(r"\s*(.*?)?(\++)(.*)",string)
-        if additionMatch and additionMatch.group(3) and additionMatch.group(1):
+        additionMatch = re.match(r"\s*(.*?)?(\+|\-)(.*)",string)
+        isAddition = additionMatch and additionMatch.group(2) == "+" and additionMatch.group(1) and additionMatch.group(2)
+        isSubtraction = additionMatch and additionMatch.group(2) == "-" and additionMatch.group(1) and additionMatch.group(2)
+        isPositive = additionMatch and additionMatch.group(2) == "+" and (not additionMatch.group(1)) and additionMatch.group(2)
+        isNegative = additionMatch and additionMatch.group(2) == "-" and (not additionMatch.group(1)) and additionMatch.group(2)
+        if additionMatch and isAddition:
 
-            return self.calculateString(additionMatch.group(1)) + self.calculateString(additionMatch.group(3))
+            left = self.calculateString(additionMatch.group(1))
+            right = self.calculateString(additionMatch.group(3))
+            return self.addition(left,right)
 
-        elif additionMatch and additionMatch.group(3) and not additionMatch.group(1):
+        elif additionMatch and isSubtraction:
+            left = self.calculateString(additionMatch.group(1))
+            right = self.calculateString(additionMatch.group(3))
+            return self.subtraction(left,right) 
+
+        elif additionMatch and isPositive:
 
             return self.calculateString(additionMatch.group(3))
+        elif additionMatch and isNegative:
+            return -1 * self.calculateString(additionMatch.group(3))
 
         elif additionMatch:
             raise Exception("syntax error:the operator '+' is unexpected -> "+string)
