@@ -21,32 +21,32 @@ class operator:
     def divisor(self,x,y):
         return x//y
 
-class expresoinCalculator(operator):
+class expressionCalculator(operator):
     def xor(self,a,b):
         return bool((a and not b) or (b and not a))
 
-    def stringToNumber(self,numberMatch,string:str):
+    def stringToNumber(self,numberMatch,expression:str):
         if numberMatch.group(2):
-            return float(string)
-        return int(string)
+            return float(expression)
+        return int(expression)
 
 
-    def parseParentheses(self,string:str):
-        ifLeftParentheses = string[0] == "("
-        ifRightParentheses = string[-1] == ")"
+    def parseParentheses(self,expression:str):
+        ifLeftParentheses = expression[0] == "("
+        ifRightParentheses = expression[-1] == ")"
 
         parenthesesSyntaxError = self.xor(ifLeftParentheses,ifRightParentheses)
 
         haveParentheses = ifLeftParentheses and ifRightParentheses
 
         if parenthesesSyntaxError:
-            raise Exception("syntax error:unexpected parentheses ->"+string)
+            raise Exception("syntax error:unexpected parentheses ->"+expression)
         if haveParentheses:
-            return self.parseString(string[1:-1])
+            return self.parseString(expression[1:-1])
         return None
 
-    def parseMultiplicationDivisoinRemainder(self,string:str):
-        match = re.match(r"\s*(.+?)(\*|\/\/|\/|%)(.+)",string)
+    def parseMultiplicationDivisoinRemainder(self,expression:str):
+        match = re.match(r"\s*(.+?)(\*|\/\/|\/|%)(.+)",expression)
         ifmultiplication = match and match.group(2) == "*"
         ifdivision = match and match.group(2) == "/"
         ifremainder = match and match.group(2) == "%"
@@ -69,9 +69,9 @@ class expresoinCalculator(operator):
             return self.divisor(left,right)
         return None
 
-    def parseAdditionAndSubtraction(self,string:str):
+    def parseAdditionAndSubtraction(self,expression:str):
 
-        match = re.match(r"\s*(.*?)(\+|\-)(.+)",string)
+        match = re.match(r"\s*(.*?)(\+|\-)(.+)",expression)
         isAddition = match and match.group(2) == "+" and match.group(1) and match.group(2)
         isSubtraction = match and match.group(2) == "-" and match.group(1) and match.group(2)
         isPositive = match and match.group(2) == "+" and (not match.group(1)) and match.group(2)
@@ -95,28 +95,28 @@ class expresoinCalculator(operator):
         return None
 
 
-    def parseNumber(self,string:str):
-        match = re.match(r"\s*(\d+)(\.\d+)?\s*$",string)
+    def parseNumber(self,expression:str):
+        match = re.match(r"\s*(\d+)(\.\d+)?\s*$",expression)
         """
         12355.1234
         numberMatch.group(1):Interger part -> 12355
         numberMatch.group(2):Float Part -> .1234
         """
         if match:
-            return self.stringToNumber(match,string)
+            return self.stringToNumber(match,expression)
         else:
-            raise Exception("syntax error:the number \""+string+"\" is unexpected")
+            raise Exception("syntax error:the number \""+expression+"\" is unexpected")
 
-    def parseString(self,string):
+    def parseString(self,expression:str):
         stack = [
                 self.parseParentheses,
                 self.parseMultiplicationDivisoinRemainder,
                 self.parseAdditionAndSubtraction,
                 ]
         for func in stack:
-            if func(string) != None:
-                return func(string)
-        return self.parseNumber(string)
+            if func(expression) != None:
+                return func(expression)
+        return self.parseNumber(expression)
 
-    def __init__(self,string:str):
-        self.result = self.parseString(string)
+    def __init__(self,expression:str):
+        self.result = self.parseString(expression)
