@@ -35,13 +35,15 @@ class expressionCalculator(operator):
         ifLeftParentheses = expression[0] == "("
         ifRightParentheses = expression[-1] == ")"
 
-        parenthesesSyntaxError = self.xor(ifLeftParentheses,ifRightParentheses)
+        singleParentheses = self.xor("(" in expression,")" in expression)
 
-        haveParentheses = ifLeftParentheses and ifRightParentheses
+        parenthesesSyntaxError = self.xor(ifLeftParentheses,ifRightParentheses) and singleParentheses
+
+        ifParentheses = ifLeftParentheses and ifRightParentheses
 
         if parenthesesSyntaxError:
             raise Exception("syntax error:unexpected parentheses ->"+expression)
-        if haveParentheses:
+        if ifParentheses:
             return self.parseExpression(expression[1:-1])
         return None
 
