@@ -1,131 +1,92 @@
 import re
+from enum import Enum,unique
 
-class operator:
-    def addition(self,x,y):
-        return x + y
-    
-    def subtraction(self,x,y):
-        return x - y
-    
-    def multiplication(self,x,y):
-        return x * y
-    
-    def division(self,x,y):
-        return x / y
-    
-    def remainder(self,x,y):
-        return x % y
-    
-    def powerOf(self,x,y):
-        return x ** y
-    def divisor(self,x,y):
-        return x//y
+class Lexer:
+    tokens = None
+    varibles:dict[str,float|int] = {
+        "TEST_VARIBLE":114514,
+        "PI":3.1415926,
+    }
+    operators = {
+        "LParentheses":4,
+        "RParentheses":4,
 
-class expressionCalculator(operator):
-    def xor(self,a,b):
-        return bool((a and not b) or (b and not a))
+        "neg":3,
+        "pos":3,
 
-    def stringToNumber(self,numberMatch,expression:str):
-        if numberMatch.group(2):
-            return float(expression)
-        return int(expression)
+        "pow":2,
 
+        "mul":1,
+        "truediv":1,
+        "floordiv":1,
+        "mod":1,
 
-    def parseParentheses(self,expression:str):
-        ifLeftParentheses = expression[0] == "("
-        ifRightParentheses = expression[-1] == ")"
+        "add":0,
+        "sub":0,
 
-        singleParentheses = self.xor("(" in expression,")" in expression)
+    }
+    def stringValueToRealValue(self,string:str):
+        isVarible = string in self.varibles
+        isInteger = re.match(r"\d*$",string)
+        isFloat = re.match(r"\d+\.\d+$|\d+\.$|\.\d+$",string)
+        result = string
+        if isVarible:
+            result = self.varibles[string]
+        if isInteger:
+            result = int(string)
+        if isFloat:
+            result = float(string)
+        return result
 
-        ifParentheses = ifLeftParentheses and ifRightParentheses
+    def stringOperatorToEnumOperator(self,left:str|None,between:str):
+        leftIsOperator = type(left) == str and not left == ")"
+        if between == '+' and (left is None or leftIsOperator):
+            return "pos"
+        if between == '+' and not (left is None or leftIsOperator):
+            return "add"
+        if between == '-' and (left is None or leftIsOperator):
+            return "neg"
+        if between == '-' and not (left is None or leftIsOperator):
+            return "sub"
+        if between == '*':
+            return "mul"
+        if between == "/":
+            return "truediv"
+        if between == "//":
+            return "floordiv"
+        if between == "%":
+            return "mod"
+        if between == "**":
+            return "pow"
+        return between
 
-        if singleParentheses:
-            raise Exception("syntax error:unexpected parentheses ->"+expression)
-        if ifParentheses:
-            return self.parseExpression(expression[1:-1])
-        return None
+    def participle(self,exp:str):
+        self.tokens = re.findall(test,exp)
+        for i in range(len(self.tokens)):
+            if i != 0:
+                left = self.tokens[i-1]
+            else:
+                left = None
+            between = self.tokens[i]
 
-    def parsePowerOf(self,expression:str):
-        match = re.match(r"\s*(.+?)(\*\*)(.+)",expression)
-        if match:
-            left = self.parseExpression(match.group(1))
-            right = self.parseExpression(match.group(3))
-            return self.powerOf(left,right)
-        return None
+            self.tokens[i] = self.stringValueToRealValue(between)
+            between = self.tokens[i]
+            self.tokens[i] = self.stringOperatorToEnumOperator(left,between) 
 
-    def parseMultiplicationDivisoinRemainder(self,expression:str):
-        match = re.match(r"\s*(.+?)(\*|\/\/|\/|%)(.+)",expression)
-        ifmultiplication = match and match.group(2) == "*"
-        ifdivision = match and match.group(2) == "/"
-        ifremainder = match and match.group(2) == "%"
-        ifdivisor = match and match.group(2) == "//"
-        if match and ifmultiplication:
-            left = self.parseExpression(match.group(1))
-            right = self.parseExpression(match.group(3))
-            return self.multiplication(left,right)
-        if match and ifdivision:
-            left = self.parseExpression(match.group(1))
-            right = self.parseExpression(match.group(3))
-            return self.division(left,right)
-        if match and ifremainder:
-            left = self.parseExpression(match.group(1))
-            right = self.parseExpression(match.group(3))
-            return self.remainder(left,right)
-        if match and ifdivisor:
-            left = self.parseExpression(match.group(1))
-            right = self.parseExpression(match.group(3))
-            return self.divisor(left,right)
-        return None
+    def __init__(self,exp:str):
+        self.participle(exp)
+class interpreter:
+    operatorStack = []
+    valueStack = []
 
-    def parseAdditionAndSubtraction(self,expression:str):
+    def test(self,tokens:list):
+        return
 
-        match = re.match(r"\s*(.*?)(\+|\-)(.+)",expression)
-        isAddition = match and match.group(2) == "+" and match.group(1) and match.group(2)
-        isSubtraction = match and match.group(2) == "-" and match.group(1) and match.group(2)
-        isPositive = match and match.group(2) == "+" and (not match.group(1)) and match.group(2)
-        isNegative = match and match.group(2) == "-" and (not match.group(1)) and match.group(2)
-        if match and isAddition:
-
-            left = self.parseExpression(match.group(1))
-            right = self.parseExpression(match.group(3))
-            return self.addition(left,right)
-
-        if match and isSubtraction:
-            left = self.parseExpression(match.group(1))
-            right = self.parseExpression(match.group(3))
-            return self.subtraction(left,right) 
-
-        if match and isPositive:
-
-            return self.parseExpression(match.group(3))
-        if match and isNegative:
-            return -1 * self.parseExpression(match.group(3))
-        return None
+    def __init__(self,tokens:list):
+        self.tokens = tokens
 
 
-    def parseNumber(self,expression:str):
-        match = re.match(r"\s*(\d+)(\.\d+)?\s*$",expression)
-        """
-        12355.1234
-        numberMatch.group(1):Interger part -> 12355
-        numberMatch.group(2):Float Part -> .1234
-        """
-        if match:
-            return self.stringToNumber(match,expression)
-        else:
-            raise Exception("syntax error:the number \""+expression+"\" is unexpected")
-
-    def parseExpression(self,expression:str):
-        stack = [
-                self.parseParentheses,
-                self.parsePowerOf,
-                self.parseMultiplicationDivisoinRemainder,
-                self.parseAdditionAndSubtraction,
-                ]
-        for func in stack:
-            if func(expression) is not None:
-                return func(expression)
-        return self.parseNumber(expression)
-
-    def __init__(self,expression:str):
-        self.result = self.parseExpression(expression)
+class expressionCalculator():
+    operatorStack = []
+    valueStack = []
+test = r"[a-zA-Z_]+\(|[0-9\.a-zA-Z_]+|\*\*|\/\/|[^0-9\.a-zA-Z_ ]{1}"
