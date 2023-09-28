@@ -5,5 +5,7 @@
 #EXAMPLE
 ```python
 import calculate as cal
-print(cal.expressionCalculator("((1+1)*4").result)
+expression = "-(-.23+5-++1)+1+1+1/2"
+test = cal.expressionCalculator(expression)
+print(test.result)
 ```
