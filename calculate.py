@@ -23,7 +23,7 @@ class operators:
 
 class Lexer:
     tokens:list = []
-    varibles:dict[str,float or int] = {
+    varibles:dict[str,float|int] = {
         "TEST_VARIBLE":114514,
         "PI":3.1415926,
     }
@@ -40,7 +40,7 @@ class Lexer:
             result = float(string)
         return result
 
-    def stringOperatorToEnumOperator(self,left:str and None,between:str):
+    def stringOperatorToEnumOperator(self,left:str|None,between:str):
         leftIsOperator = type(left) == str and not left == ")"
         if between == '+' and (left is None or leftIsOperator):
             return "pos"
